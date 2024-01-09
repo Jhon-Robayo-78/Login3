@@ -108,7 +108,8 @@ const login = async (data, callback) =>{
                     //generate token
                     callback(auth.assignToken({...result[0]}))
                 }else{
-                    throw new Error('información invalida');
+                    callback({message:"información invalida"})
+                    //throw new Error('información invalida');
                 }
             })
         }

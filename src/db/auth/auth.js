@@ -13,6 +13,12 @@ require('dotenv').config();
 const Sk = process.env.SECRET_KEY || 'holamundo';
 
 const assignToken = (data)=>{
+    const expiresIn = '1d';
+    const audience = 'apiusers'; // Asegúrate de que este valor coincida con el definido en tu aplicación .NET
+    const issuer = 'http://localhost:8050/api/auth'; // Asegúrate de que este valor coincida con el definido en tu aplicación .NET
+
+    //return jwt.sign(data, Sk, { expiresIn, audience, issuer });
+    //return jwt.sign(data, Sk, { expiresIn });
     return jwt.sign(data, Sk);
 };
 
