@@ -19,7 +19,7 @@ const assignToken = (data)=>{
 
     //return jwt.sign(data, Sk, { expiresIn, audience, issuer });
     //return jwt.sign(data, Sk, { expiresIn });
-    return jwt.sign(data, Sk);
+    return jwt.sign({email:data.email, role:data.rol}, Sk);
 };
 
 const checkToken = {

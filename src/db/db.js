@@ -2,11 +2,11 @@ const mysql2 = require('mysql2');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const host = process.env.host || ''
-const userdb = process.env.user || 'root'
-const password_db = process.env.password || ''
-const database = process.env.database || ''
-const portdb = process.env.db_port || 3306
+const host = process.env.SERVER || ''
+const userdb = process.env.USER || 'root'
+const password_db = process.env.PASSWORD || ''
+const database = process.env.DATABASE || ''
+const portdb = process.env.PORTdb || 3306
 
 let connection; 
 const reconnection = ()=>{
@@ -44,24 +44,39 @@ const bcrypt = require('bcrypt');
 
 //create
 const create = async(data, callback)=>{
+    var count;
     let hashpass = await bcrypt.hash((data.password).toString(), parseInt(process.env.JUMPS));
-    let queryCreate = `INSERT INTO user VALUES(0,'${data.username}','${data.email}','${hashpass}',${data.activo})`;   
-    connection.query(queryCreate, (err,result)=>{
-        try{
-            if(err)throw err;
-            callback(result);
-        }catch(error){
-            if(error.errno == 1062){ 
-                callback({'message':'correo duplicado'});
-            }
-        console.error("se produjo un error: ", error);
+    let queryValidator = `SELECT COUNT(*) FROM Useruniversity WHERE emailAcademico='${data.email}'`;
+    connection.query(queryValidator, (err,result)=>{
+        if(err) throw err;
+        count=result[0]["COUNT(*)"];
+        if(count==1){ 
+            let queryCreate = `INSERT INTO Account (id, email, password, rol)
+                                    SELECT u.id, u.emailAcademico, '${hashpass}', u.Rol
+                                    FROM Useruniversity as u
+                                    WHERE u.id = '${data.id}'`;   
+            connection.query(queryCreate, (err,result)=>{
+                try{
+                    if(err)throw err;
+                    callback(result);
+                }catch(error){
+                    if(error.errno == 1062){ 
+                        callback({'message':'correo duplicado'});
+                    }
+                console.error("se produjo un error: ", error);
+                }
+            })
+        }else{
+            callback({"message":"Correo academico inexistente"})
         }
     })
+    
+    
 }
 
 //read
 const read = (data, callback)=>{
-    let readQuery = `SELECT id, username, email FROM user WHERE id = ${data.id}`;
+    let readQuery = `SELECT id, email, rol FROM Account WHERE id = ${data.id}`;
     connection.query(readQuery,(err,result)=>{
         if(err)throw err;
         if(result[0]==null){
@@ -78,7 +93,7 @@ const read = (data, callback)=>{
 //update
 const updateData = async(data, callback)=>{
     let hashpass = await bcrypt.hash((data.password).toString(), parseInt(process.env.JUMPS));
-    let updateQuery = `UPDATE user SET username='${data.username}', email='${data.email}', password='${hashpass}', activo=${data.activo} WHERE email="${data.email}"`;
+    let updateQuery = `UPDATE Account SET password='${hashpass}' WHERE email="${data.email}"`;
     connection.query(updateQuery,(err, result)=>{
         if(err)throw err;
         callback(result);
@@ -87,7 +102,7 @@ const updateData = async(data, callback)=>{
 
 //delete
 const deleteUSer = (data, callback)=>{
-    let deleteQuery = `DELETE FROM user where email = '${data.email}'`;
+    let deleteQuery = `DELETE FROM Account where email = '${data.email}'`;
     connection.query(deleteQuery,(err, result)=>{
         if(err) throw err;
         callback(result); 
@@ -97,7 +112,7 @@ const deleteUSer = (data, callback)=>{
 
 const auth = require('./auth/auth')
 const login = async (data, callback) =>{
-    let queryLog = `SELECT email,password FROM user where email='${data.email}'`;
+    let queryLog = `SELECT email,password,rol FROM Account where email='${data.email}'`;
     connection.query(queryLog, (err, result)=>{
         if(err){
             throw err;

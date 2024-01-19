@@ -1,29 +1,12 @@
-create database if not exists userManager;
+CREATE DATABASE IF NOT exists asistencias_db;
 
-use userManager;
+USE asistencias_db;
 
-create table user(
-         id int not null auto_increment unique,
-         username varchar(30) not null,
-         email varchar(30) not null unique,
-         password varchar(100) not null,
-         primary key(email)
+CREATE TABLE Account (
+    id VARCHAR(12) NOT NULL default 'T000' unique,
+    email VARCHAR(80) NOT NULL default 'example@email.com' unique,
+    password VARCHAR(100) NOT NULL default '',
+    rol VARCHAR(7) NOT NULL default '',
+    PRIMARY KEY (id),
+    FOREIGN KEY (id) REFERENCES Useruniversity(id)
 );
-/* idata es id de la información que proporciona la api de presupuesto */
-create table presupuesto(
-		 idata varchar(100) not null unique,
-         montoinicial float default 0.0, 
-         id_fk int not null,
-         primary key(idata),
-         foreign key(id_fk) references user(id)
-);
-
-create table bolsillos(
-         id int not null auto_increment unique,
-         derivado float default 0.0,
-         userId int not null,
-         foreign key(userId) references user(id)
-);
-
-ALTER TABLE bolsillos
-ADD PRIMARY KEY (id);
